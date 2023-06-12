@@ -1,0 +1,6 @@
+---
+title: "ReproducibleResearchAssignment2"
+author: "CrankyKookyCorvids"
+date: "2023-06-10"
+output: html_document
+---
