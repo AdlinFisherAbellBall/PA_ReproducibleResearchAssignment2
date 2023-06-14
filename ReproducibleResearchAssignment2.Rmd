@@ -4,3 +4,61 @@ author: "CrankyKookyCorvids"
 date: "2023-06-10"
 output: html_document
 ---
+
+```{r}
+damage = read.csv(bzfile("repdata_data_StormData.csv.bz2"))
+damage$BGN_DATE = strptime(damage$BGN_DATE, tz='', '%m/%d/%Y %H:%M:%OS')
+damage30 = damage[damage$BGN_DATE > strptime('1981-11-01', '%Y-%m-%d'),
+                  1:length(colnames(damage))]
+columns = c('BGN_DATE', 'PROPDMG', 'PROPDMGEXP', 'CROPDMG', 'CROPDMGEXP', 'EVTYPE')
+QuantDam = damage30[columns]
+QuantDam = QuantDam[(QuantDam$PROPDMG == 0)|
+                      (QuantDam$PROPDMGEXP %in% c('K', 'M', 'B', '')), 
+                    1:length(colnames(QuantDam)) ]
+QuantDam = QuantDam[(QuantDam$CROPDMG == 0)|
+                      (QuantDam$CROPDMGEXP %in% c('K', 'M', 'B', '')), 
+                    1:length(colnames(QuantDam)) ]
+
+totaldamage = rep(0, dim(QuantDam)[1])
+ttldmg2023 = rep(0, dim(QuantDam)[1])
+
+pks = (QuantDam$PROPDMGEXP == 'K' | QuantDam$PROPDMGEXP == 'k')
+totaldamage = totaldamage + QuantDam$PROPDMG * pks * 10^3
+remove(pks)
+
+pms = (QuantDam$PROPDMGEXP == 'M')
+totaldamage = totaldamage + QuantDam$PROPDMG * pms * 10^6
+remove(pms)
+
+pbs = (QuantDam$PROPDMGEXP == 'B')
+totaldamage = totaldamage + QuantDam$PROPDMG * pbs * 10^9
+remove(pbs)
+
+cks = (QuantDam$CROPDMGEXP == 'K' | QuantDam$CROPDMGEXP == 'k')
+totaldamage = totaldamage + QuantDam$CROPDMG * cks * 10^3
+remove(cks)
+
+cms = (QuantDam$CROPDMGEXP == 'M')
+totaldamage = totaldamage + QuantDam$CROPDMG * cms * 10^6
+remove(cms)
+
+cbs = (QuantDam$CROPDMGEXP == 'B')
+totaldamage = totaldamage + QuantDam$CROPDMG * cbs * 10^9
+remove(cbs)
+
+eventCPI = rep(0, dim(QuantDam)[1])
+for (i in 1:dim(QuantDam)[1])
+for (i in 1:dim(QuantDam)[1]){
+  
+}
+
+ttldmg2023 = rep(0, dim(QuantDam)[1])
+
+QuantDam = cbind(QuantDam, TOTALDMG = totaldamage)
+CPI = read.csv('CPI.csv')
+
+CPI$Label = strptime(paste(CPI$Label, '01'), '%Y %b %d')
+
+
+```
+
