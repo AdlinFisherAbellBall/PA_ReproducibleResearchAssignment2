@@ -47,10 +47,7 @@ totaldamage = totaldamage + QuantDam$CROPDMG * cbs * 10^9
 remove(cbs)
 
 eventCPI = rep(0, dim(QuantDam)[1])
-for (i in 1:dim(QuantDam)[1])
-for (i in 1:dim(QuantDam)[1]){
-  
-}
+
 
 ttldmg2023 = rep(0, dim(QuantDam)[1])
 
@@ -58,7 +55,11 @@ QuantDam = cbind(QuantDam, TOTALDMG = totaldamage)
 CPI = read.csv('CPI.csv')
 
 CPI$Label = strptime(paste(CPI$Label, '01'), '%Y %b %d')
-
-
+CPIperiod = strptime(paste(format(QuantDam$BGN_DATE, "%Y-%m"), '01', sep= '-'), format = '%Y-%m-%d')
+periodind = match(CPIperiod, CPI$Label)
+for (i in 1:length(CPIperiod)) {
+  eventCPI[i] = CPI$Value[periodind[i]]
+}
+remove(CPIperiod, periodind)
 ```
 
