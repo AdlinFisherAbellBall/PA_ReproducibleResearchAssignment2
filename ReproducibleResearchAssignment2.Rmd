@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r}
+library(ggplot2)
 damage = read.csv(bzfile("repdata_data_StormData.csv.bz2"))
 damage$BGN_DATE = strptime(damage$BGN_DATE, tz='', '%m/%d/%Y %H:%M:%OS')
 damage30 = damage[damage$BGN_DATE > strptime('1981-11-01', '%Y-%m-%d'),
@@ -61,5 +62,31 @@ for (i in 1:length(CPIperiod)) {
   eventCPI[i] = CPI$Value[periodind[i]]
 }
 remove(CPIperiod, periodind)
+
+NowCPI = CPI$Value[match(strptime('2023-05-01', '%Y-%m-%d'), CPI$Label)]
+ttldmg2023 = (NowCPI/eventCPI) * totaldamage
+QuantDam = cbind(QuantDam, TOTAL2023DMG = as.numeric(ttldmg2023))
+hurricanelabels = c('HURRICANE OPAL', 'HURRICANE OPAL/HIGH WINDS',
+                    'HURRICANE ERIN', 'HURRICANE EMILY', 'TYPHOON',
+                    'HURRICANE')
+QuantDam$EVTYPE[QuantDam$EVTYPE %in% hurricanelabels] = 'HURRICANE/TYPHOON'
+QuantDam$EVTYPE[QuantDam$EVTYPE == 'Damaging Freeze'] = 'DAMAGING FREEZE'
+QuantDam$EVTYPE[QuantDam$EVTYPE == 'River Flooding'] = 'RIVER FLOOD'
+QuantDam$EVTYPE[QuantDam$EVTYPE == 'STORM SURGE/TIDE'] = 'STORM SURGE'
+QuantDam$EVTYPE[QuantDam$EVTYPE == 'FLASH FLOOD/FLOOD'] = 'MAJOR FLOOD'
+
+df = data.frame(EVTYPE = QuantDam$EVTYPE, DMG = as.numeric(QuantDam$TOTAL2023DMG))
+totaldamages = aggregate(df$DMG, list(df$EVTYPE), FUN = sum)
+sumind = order(totaldamages$x, decreasing = TRUE)
+df = cbind(df$EVTYPE[sumind], df$DMG[sumind])
+df = data.frame(EVENT = meandamages[1:15, 1], 
+                AVEDMG = as.numeric(meandamages[1:15, 2]))
+
+QuantDam1 = QuantDam[QuantDam$EVTYPE %in% df$EVENT, ]
+ggplot(data = QuantDam1) +
+  geom_boxplot(mapping = aes(EVTYPE, TOTAL2023DMG, fill = EVTYPE)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  scale_fill_viridis_d(option = "F") +
+  scale_y_log10(name = "Average Damage \n (Dollars as of May, 2023)")
 ```
 
