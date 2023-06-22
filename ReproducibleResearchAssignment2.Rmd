@@ -159,7 +159,7 @@ equivalent. Since all of these event titles except "COLD AND SNOW" appear to be
 used to describe events that are characterized by cold tempuratures, windchill,
 or some combination of the two, it is inuitive to combine them. Note that since
 cold and snow includes snow in its characteristic conditions, it will be 
-excluded.
+excluded. 
 
 ```{r}
 coldtags = coldtags[coldtags != 'COLD AND SNOW']
