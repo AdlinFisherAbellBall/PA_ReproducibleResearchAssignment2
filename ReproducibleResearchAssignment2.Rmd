@@ -158,7 +158,7 @@ windchill, but not every event descriptor that contains the word "cold" is
 equivalent. Since all of these event titles except "COLD AND SNOW" appear to be
 used to describe events that are characterized by cold tempuratures, windchill,
 or some combination of the two, it is inuitive to combine them. Note that since
-cold and snow includes snow in its characteristic conditions, it will be 
+cold and snow includes snow in its characteristic conditions, it will be
 excluded. 
 
 ```{r}
@@ -186,5 +186,11 @@ ggplot(data = QuantDam1) +
   scale_fill_viridis_d(option = "F") +
   scale_color_viridis_d(option = 'E', direction = -1) +
   scale_y_log10(name = "Average Damage \n (log+1 Dollars as of May, 2023)")
+QuantDam1 = QuantDam[QuantDam$EVTYPE %in% totaldamages$Group.1[top15], ]
+ggplot(data = QuantDam1) +
+  geom_boxplot(mapping = aes(EVTYPE, TOTAL2023DMG, fill = EVTYPE)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  scale_fill_viridis_d(option = "F") +
+  scale_y_log10(name = "Average Damage \n (Dollars as of May, 2023)")
 ```
 
