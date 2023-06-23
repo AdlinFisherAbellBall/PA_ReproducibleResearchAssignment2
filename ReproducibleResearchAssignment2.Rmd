@@ -275,14 +275,4 @@ top15 = order(totalcasualties$CASUALTIES, decreasing = TRUE)[1:15]
 totalcasualties[top30,]
 
 HumDmg1 = HumDmg[HumDmg$CASUALTIES != 0,]
-
-ggplot(data = HumDmg1) +
-  geom_boxplot(mapping = aes(c('FATALITIES', 'INJURIES'), fill = EVTYPE,
-                             color = EVTYPE),
-               outlier.color = 'dark gray') +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-   scale_fill_manual(values = rep("light blue", 15)) +
-   scale_color_manual(values = rep('black',15)) +
-  scale_y_log10(name = "Median Damage \n (log+1 Dollars as of May, 2023)") +
-  scale_x_discrete(name = 'Event Type Ordered by Median Damage')
 ```
