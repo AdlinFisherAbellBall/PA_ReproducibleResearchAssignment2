@@ -157,7 +157,7 @@ As we can see above, there are multiple redundant tags for cold whether or
 windchill, but not every event descriptor that contains the word "cold" is 
 equivalent. Since all of these event titles except "COLD AND SNOW" appear to be
 used to describe events that are characterized by cold tempuratures, windchill,
-or some combination of the two, it is inuitive to combine them. Note that since
+or some combination of the two, it is intuitive to combine them. Note that since
 cold and snow includes snow in its characteristic conditions, it will be
 excluded. 
 
@@ -180,17 +180,109 @@ names(totaldamages) = c('evtype', 'dmg')
 top15 = order(totaldamages$dmg, decreasing = TRUE)[1:15]
 QuantDam1 = QuantDam[QuantDam$EVTYPE %in% totaldamages$evtype[top15] &
                        QuantDam$TOTALDMG != 0, ]
+
+hurmed = median(QuantDam1$TOTAL2023DMG[QuantDam1$EVTYPE == 'HURRICANE/TYPHOON'])
+drtmed = median(QuantDam1$TOTAL2023DMG[QuantDam1$EVTYPE == 'DROUGHT'])
+fstmed = median(QuantDam1$TOTAL2023DMG[QuantDam1$EVTYPE == 'FROST/FREEZE'])
+napadmg = format(max(QuantDam1$TOTAL2023DMG[QuantDam1$EVTYPE == 'FLOOD']),
+                 big.mark = ',')
+fldmed = format(median(QuantDam1$TOTAL2023DMG[QuantDam1$EVTYPE == 'FLOOD']),
+                big.mark = ',')
+
 ggplot(data = QuantDam1) +
-  geom_boxplot(mapping = aes(EVTYPE, TOTAL2023DMG+1, fill = EVTYPE, color = EVTYPE)) +
+  geom_boxplot(mapping = aes(x = reorder(EVTYPE , TOTAL2023DMG+1, median),
+                             TOTAL2023DMG, fill = EVTYPE,
+                             color = EVTYPE),
+               outlier.color = 'dark gray') +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  scale_fill_viridis_d(option = "F") +
-  scale_color_viridis_d(option = 'E', direction = -1) +
-  scale_y_log10(name = "Average Damage \n (log+1 Dollars as of May, 2023)")
-QuantDam1 = QuantDam[QuantDam$EVTYPE %in% totaldamages$Group.1[top15], ]
-ggplot(data = QuantDam1) +
-  geom_boxplot(mapping = aes(EVTYPE, TOTAL2023DMG, fill = EVTYPE)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  scale_fill_viridis_d(option = "F") +
-  scale_y_log10(name = "Average Damage \n (Dollars as of May, 2023)")
+   scale_fill_manual(values = rep("light blue", 15)) +
+   scale_color_manual(values = rep('black',15)) +
+  scale_y_log10(name = "Median Damage \n (log+1 Dollars as of May, 2023)") +
+  scale_x_discrete(name = 'Event Type Ordered by Median Damage')
+
+remove(CPI, QuantDam, QuantDam1)
 ```
 
+Note that the above graph is of only the events that did some amount of damage,
+with events that did no damage excluded. With that in mind, we can see that the 
+event category that has the highest median damages is hurricanes and typhoons 
+with a median of $`r format(hurmed, big.mark=',')`.
+The categories with the second and third highest median damages are drought,
+with median damages of $`r format(drtmed, digits = 2, big.mark=',')`, and 
+freezing/frosts, with a median of $`r format(fstmed, digits = 2, big.mark=',')`.
+This graph also reveals a number of outlying points. The most prominent is the
+event with the single highest damage, which comes from the flooding category.
+This event's damages total to $`r napadmg`, the highest of any single event.
+Compare this with the flood category's median of $`r fldmed`. This event is the
+Napa Valley flooding of 2005.
+
+Now for the human damage of these events. For this we will once again drop the
+irrelevant categories. For consistency's sake, we will consolidate the event
+type tags the same way as we did previously.
+
+```{r}
+HumDmg = damage96[, c('EVTYPE', 'REFNUM', 'INJURIES', 'FATALITIES')]
+
+
+HumDmg$EVTYPE[grep('hurricane', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'HURRICANE/TYPHOON'
+HumDmg$EVTYPE[grep('typhoon', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'HURRICANE/TYPHOON'
+HumDmg$EVTYPE[grep('damaging freeze', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'DAMAGING FREEZE'
+HumDmg$EVTYPE[grep('flood', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'FLOOD'
+HumDmg$EVTYPE[grep('fld', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'FLOOD'
+HumDmg$EVTYPE[grep('thunderstorm', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = "THUNDERSTORM"
+HumDmg$EVTYPE[grep('tstm', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = "THUNDERSTORM"
+HumDmg$EVTYPE[grep('freeze', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = "FROST/FREEZE"
+HumDmg$EVTYPE[grep('frost', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = "FROST/FREEZE"
+HumDmg$EVTYPE[grep('storm surge', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'STORM SURGE/TIDE'
+HumDmg$EVTYPE[grep('high tide', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'STORM SURGE/TIDE'
+HumDmg$EVTYPE[grep('wild fire', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'WILD/FOREST FIRE'
+HumDmg$EVTYPE[grep('wildfire', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = 'WILD/FOREST FIRE'
+coldtags = unique(HumDmg$EVTYPE)[grep('cold', 
+                                        unique(HumDmg$EVTYPE),
+                                        ignore.case = TRUE)]
+coldtags = coldtags[coldtags != 'COLD AND SNOW']
+
+for (i in 1:length(coldtags)) {
+  HumDmg$EVTYPE[grep(coldtags[i], HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = "COLD/WIND CHILL"
+}
+HumDmg$EVTYPE[grep('windchill', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = "COLD/WIND CHILL"
+
+HumDmg$EVTYPE[grep('wind chill', HumDmg$EVTYPE,
+                     ignore.case = TRUE)] = "COLD/WIND CHILL"
+
+CASUALTIES = HumDmg$INJURIES + HumDmg$FATALITIES
+
+HumDmg = cbind(HumDmg, CASUALTIES)
+
+totalcasualties = aggregate(HumDmg[,c('INJURIES', 'FATALITIES', 'CASUALTIES')], list(HumDmg$EVTYPE), sum)
+
+top15 = order(totalcasualties$CASUALTIES, decreasing = TRUE)[1:15]
+totalcasualties[top30,]
+
+HumDmg1 = HumDmg[HumDmg$CASUALTIES != 0,]
+
+ggplot(data = HumDmg1) +
+  geom_boxplot(mapping = aes(c('FATALITIES', 'INJURIES'), fill = EVTYPE,
+                             color = EVTYPE),
+               outlier.color = 'dark gray') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+   scale_fill_manual(values = rep("light blue", 15)) +
+   scale_color_manual(values = rep('black',15)) +
+  scale_y_log10(name = "Median Damage \n (log+1 Dollars as of May, 2023)") +
+  scale_x_discrete(name = 'Event Type Ordered by Median Damage')
+```
