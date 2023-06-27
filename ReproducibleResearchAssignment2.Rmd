@@ -15,6 +15,20 @@ damage to property. See the
 for more information. Then for the sake of consistency of the data collection
 process, this analysis will use the data available from the year 1996 and
 onward. We will begin by preparing the data for analysis:
+
+# Abstract
+
+The main flaw of this data set is inconsistent labelling. Therefore results 
+are contingent on the handling of the event type labels.
+Brief analysis of the provided data shows that those events that cause the
+most economic damages per occurrence ordered by descending ranking are
+hurricanes, drought, and frost. Those events that cause the no event type has
+a higher median number of fatalities than any other when considering only
+those events that caused either an injury or fatality. Though the events that
+cause the greatest total number of casualties, ordered by descending rank, are
+tornadoes, floods, and excessive heat, excessive heat has the highest median
+number of injuries at 10, while fog and winter storms are tied for the next
+highest medians of 4 injuries.
   
 # Data Processing
   
